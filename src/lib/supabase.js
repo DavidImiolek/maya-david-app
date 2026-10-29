@@ -1,0 +1,11 @@
+import { createClient } from '@supabase/supabase-js'
+
+// Die Zugangsdaten kommen aus Umgebungsvariablen (lokal: .env.local, online: Vercel-Einstellungen)
+const url = import.meta.env.VITE_SUPABASE_URL
+const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+
+export const configMissing = !url || !key
+
+export const supabase = configMissing
+  ? null
+  : createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true } })
