@@ -1,111 +1,40 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
-import CalendarView from './CalendarView.jsx'
-import EventForm from './EventForm.jsx'
-import EventDetail from './EventDetail.jsx'
+import { FEATURES } from '../features.js'
 
+// Startseite: Begrüßung + eine Kachel pro Feature
 export default function Home({ session }) {
-  const userId = session.user.id
-  const [data, setData] = useState({ profiles: [], events: [], exceptions: [], comments: [] })
-  const [loadError, setLoadError] = useState('')
-  const [sheet, setSheet] = useState(null) // { type: 'form', event?, defaults? } | { type: 'detail', eventId, datum }
-  const reloadTimer = useRef(null)
-
-  const load = useCallback(async () => {
-    const [p, e, x, c] = await Promise.all([
-      supabase.from('profiles').select('*').order('created_at'),
-      supabase.from('events').select('*'),
-      supabase.from('event_exceptions').select('*'),
-      supabase.from('comments').select('*').order('created_at'),
-    ])
-    const err = p.error || e.error || x.error || c.error
-    if (err) {
-      setLoadError('Daten konnten nicht geladen werden: ' + err.message)
-      return
-    }
-    setLoadError('')
-    setData({ profiles: p.data, events: e.data, exceptions: x.data, comments: c.data })
-  }, [])
-
-  // Mehrere Änderungen kurz hintereinander nur einmal neu laden
-  const scheduleReload = useCallback(() => {
-    clearTimeout(reloadTimer.current)
-    reloadTimer.current = setTimeout(load, 250)
-  }, [load])
+  const [me, setMe] = useState(null)
 
   useEffect(() => {
-    load()
-    // Live-Updates: bei jeder Änderung in der Datenbank neu laden
-    const channel = supabase
-      .channel('alles')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, scheduleReload)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_exceptions' }, scheduleReload)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, scheduleReload)
-      .subscribe()
-    // iPhone pausiert Apps im Hintergrund – beim Zurückkehren frisch laden
-    const onVisible = () => document.visibilityState === 'visible' && scheduleReload()
-    document.addEventListener('visibilitychange', onVisible)
-    return () => {
-      supabase.removeChannel(channel)
-      document.removeEventListener('visibilitychange', onVisible)
-    }
-  }, [load, scheduleReload])
-
-  const profilesById = useMemo(
-    () => Object.fromEntries(data.profiles.map((p) => [p.id, p])),
-    [data.profiles]
-  )
-  const me = profilesById[userId]
-
-  const detailEvent = sheet?.type === 'detail' ? data.events.find((e) => e.id === sheet.eventId) : null
+    supabase.from('profiles').select('name, farbe').eq('id', session.user.id).single()
+      .then(({ data }) => setMe(data))
+  }, [session.user.id])
 
   return (
-    <div className="app">
-      <header className="topbar">
-        <div className="legend">
-          {data.profiles.map((p) => (
-            <span key={p.id}><i style={{ background: p.farbe }} />{p.name}</span>
-          ))}
-          <span className="legend-maybe"><i />vielleicht</span>
+    <div className="home">
+      <header className="home-head">
+        <div>
+          <p className="muted small">{new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+          <h1>Hallo{me ? ` ${me.name}` : ''}</h1>
         </div>
         <button className="link" onClick={() => supabase.auth.signOut()}>Abmelden</button>
       </header>
 
-      {loadError && <p className="error banner">{loadError}</p>}
-
-      <CalendarView
-        data={data}
-        profilesById={profilesById}
-        onEventClick={(eventId, datum) => setSheet({ type: 'detail', eventId, datum })}
-        onDateClick={(defaults) => setSheet({ type: 'form', defaults })}
-      />
-
-      <button className="fab" aria-label="Neuer Termin" onClick={() => setSheet({ type: 'form', defaults: {} })}>+</button>
-
-      {sheet?.type === 'form' && (
-        <EventForm
-          me={me}
-          profiles={data.profiles}
-          event={sheet.event}
-          defaults={sheet.defaults}
-          onClose={() => setSheet(null)}
-          onSaved={() => { setSheet(null); load() }}
-        />
-      )}
-
-      {sheet?.type === 'detail' && detailEvent && (
-        <EventDetail
-          event={detailEvent}
-          datum={sheet.datum}
-          userId={userId}
-          profilesById={profilesById}
-          comments={data.comments.filter((c) => c.event_id === detailEvent.id && c.datum === sheet.datum)}
-          onClose={() => setSheet(null)}
-          onEdit={() => setSheet({ type: 'form', event: detailEvent })}
-          onChanged={load}
-          onDeleted={() => { setSheet(null); load() }}
-        />
-      )}
+      <div className="tiles">
+        {FEATURES.map((f) => (
+          <a key={f.id} className="tile" href={`#/${f.id}`} style={{ '--tile': f.color }}>
+            <span className="tile-icon">{f.icon}</span>
+            <strong className="tile-title">{f.title}</strong>
+            {f.Tile && <f.Tile />}
+          </a>
+        ))}
+        <div className="tile tile-soon">
+          <span className="tile-icon">✨</span>
+          <strong className="tile-title">Bald mehr</strong>
+          <p className="tile-sub">Nächstes Feature</p>
+        </div>
+      </div>
     </div>
   )
 }

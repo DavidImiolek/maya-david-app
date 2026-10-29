@@ -39,3 +39,9 @@ cp .env.example .env.local   # Werte eintragen
 npm run dev
 npm test                     # testet die Wiederholungslogik
 ```
+
+## Neues Feature hinzufügen
+1. Neue Seite anlegen, z. B. `src/components/EinkaufPage.jsx` (bekommt `session` als Prop, Zurück-Link: `<a href="#/">‹ Start</a>`).
+2. In `src/features.js` einen Eintrag ergänzen (id, title, icon, color, Page, optional Tile).
+3. Falls Daten gespeichert werden: neue SQL-Datei in `supabase/` (Tabelle + Row Level Security), im SQL Editor ausführen.
+Die Kachel auf der Startseite und die Adresse `#/<id>` entstehen automatisch.
