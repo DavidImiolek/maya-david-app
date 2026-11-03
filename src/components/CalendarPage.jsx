@@ -3,6 +3,7 @@ import { useCalendarData } from '../lib/useCalendarData.js'
 import CalendarView from './CalendarView.jsx'
 import EventForm from './EventForm.jsx'
 import EventDetail from './EventDetail.jsx'
+import { GEMEINSAM_FARBE } from '../lib/colors.js'
 
 export default function CalendarPage({ session }) {
   const userId = session.user.id
@@ -24,6 +25,7 @@ export default function CalendarPage({ session }) {
           {data.profiles.map((p) => (
             <span key={p.id}><i style={{ background: p.farbe }} />{p.name}</span>
           ))}
+          <span><i style={{ background: GEMEINSAM_FARBE }} />Beide</span>
           <span className="legend-maybe"><i />vielleicht</span>
         </div>
       </header>

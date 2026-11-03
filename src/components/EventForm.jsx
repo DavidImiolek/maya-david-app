@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 import { buildRule, parseRule, dateKey } from '../lib/recurrence.js'
+import { GEMEINSAM_FARBE } from '../lib/colors.js'
 
 const WEEKDAYS = [ [1, 'Mo'], [2, 'Di'], [3, 'Mi'], [4, 'Do'], [5, 'Fr'], [6, 'Sa'], [0, 'So'] ]
 const timeOf = (d) => d.toTimeString().slice(0, 5)
@@ -22,7 +23,7 @@ function initialState(event, defaults, me) {
     const e = event.end_at ? new Date(event.end_at) : null
     const rule = parseRule(event.recurrence_rule)
     return {
-      title: event.title, owner_id: event.owner_id, status: event.status, all_day: event.all_day,
+      title: event.title, owner_id: event.owner_id, both: !!event.gemeinsam, status: event.status, all_day: event.all_day,
       day: dateKey(s),
       endDay: event.all_day && e ? addDays(dateKey(e), -1) : dateKey(s),
       startTime: timeOf(s), endTime: e && !event.all_day ? timeOf(e) : '',
@@ -36,7 +37,7 @@ function initialState(event, defaults, me) {
   const startTime = defaults?.time || '18:00'
   const [h, m] = startTime.split(':').map(Number)
   return {
-    title: '', owner_id: me?.id, status: 'fest', all_day: !!defaults?.allDay,
+    title: '', owner_id: me?.id, both: false, status: 'fest', all_day: !!defaults?.allDay,
     day, endDay: day, startTime,
     endTime: `${String(Math.min(h + 1, 23)).padStart(2, '0')}:${String(m).padStart(2, '0')}`,
     openEnd: false, freq: 'NONE', byday: [toDate(day).getDay()], until: '',
@@ -74,9 +75,11 @@ export default function EventForm({ me, profiles, event, defaults, onClose, onSa
     if (f.freq === 'WEEKLY' && f.byday.length === 0) return setError('Bitte mindestens einen Wochentag wählen.')
     if (f.freq !== 'NONE' && f.until && f.until < f.day) return setError('Das Serienende liegt vor dem Beginn.')
 
+    if (!f.both && !f.owner_id) return setError('Bitte auswählen, für wen der Termin ist.')
     const row = {
       title: f.title.trim(),
-      owner_id: f.owner_id,
+      owner_id: f.both ? (event?.owner_id || me?.id) : f.owner_id,
+      gemeinsam: f.both,
       status: f.status,
       all_day: f.all_day,
       start_at: start.toISOString(),
@@ -92,6 +95,16 @@ export default function EventForm({ me, profiles, event, defaults, onClose, onSa
     setBusy(false)
     if (error) return setError('Speichern fehlgeschlagen: ' + error.message)
     onSaved()
+  }
+
+  // Antippen schaltet eine Person an/aus. Beide an = gemeinsamer Termin.
+  function toggleOwner(id) {
+    const selected = new Set(f.both ? profiles.map((p) => p.id) : f.owner_id ? [f.owner_id] : [])
+    if (selected.has(id)) selected.delete(id)
+    else selected.add(id)
+    if (selected.size === 2) set({ both: true })
+    else if (selected.size === 1) set({ both: false, owner_id: [...selected][0] })
+    else set({ both: false, owner_id: null })
   }
 
   const toggleDay = (d) =>
@@ -113,13 +126,18 @@ export default function EventForm({ me, profiles, event, defaults, onClose, onSa
 
         <label className="field-label">Für</label>
         <div className="segmented">
-          {profiles.map((p) => (
-            <button type="button" key={p.id}
-              className={f.owner_id === p.id ? 'on' : ''}
-              style={f.owner_id === p.id ? { background: p.farbe, borderColor: p.farbe } : {}}
-              onClick={() => set({ owner_id: p.id })}>{p.name}</button>
-          ))}
+          {profiles.map((p) => {
+            const on = f.both || f.owner_id === p.id
+            const bg = f.both ? GEMEINSAM_FARBE : p.farbe
+            return (
+              <button type="button" key={p.id}
+                className={on ? 'on' + (f.both ? ' light' : '') : ''}
+                style={on ? { background: bg, borderColor: bg } : {}}
+                onClick={() => toggleOwner(p.id)}>{p.name}</button>
+            )
+          })}
         </div>
+        {f.both && <p className="hint">Gemeinsamer Termin – beide können ihn bearbeiten.</p>}
 
         <label className="field-label">Status</label>
         <div className="segmented">

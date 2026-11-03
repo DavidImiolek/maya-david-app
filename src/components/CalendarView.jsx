@@ -5,6 +5,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import deLocale from '@fullcalendar/core/locales/de'
 import { expandEvent, dateKey } from '../lib/recurrence.js'
+import { eventColor } from '../lib/colors.js'
 
 export default function CalendarView({ data, profilesById, onEventClick, onDateClick }) {
   // Ausnahmen je Termin: { eventId: Set("2026-11-10", ...) }
@@ -29,8 +30,9 @@ export default function CalendarView({ data, profilesById, onEventClick, onDateC
     (info, success) => {
       const out = []
       for (const ev of data.events) {
-        const color = profilesById[ev.owner_id]?.farbe || '#888888'
+        const color = eventColor(ev, profilesById)
         const classes = []
+        if (ev.gemeinsam) classes.push('ev-light')
         if (ev.status === 'vielleicht') classes.push('ev-maybe')
         if (!ev.end_at && !ev.all_day) classes.push('ev-openend')
         for (const o of expandEvent(ev, info.start, info.end, exceptionsByEvent[ev.id])) {

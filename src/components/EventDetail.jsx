@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 import { describeRule } from '../lib/recurrence.js'
+import { eventColor } from '../lib/colors.js'
 
 const fmtDay = (key) =>
   new Date(key + 'T12:00').toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'long' })
@@ -21,8 +22,8 @@ export default function EventDetail({ event, datum, userId, profilesById, commen
   const [error, setError] = useState('')
   const owner = profilesById[event.owner_id]
   const creator = profilesById[event.created_by]
-  const canEdit = userId === event.owner_id || userId === event.created_by
-  const color = owner?.farbe || '#888'
+  const canEdit = event.gemeinsam || userId === event.owner_id || userId === event.created_by
+  const color = eventColor(event, profilesById)
   const maybe = event.status === 'vielleicht'
   const repeat = describeRule(event.recurrence_rule, event.start_at)
 
@@ -62,7 +63,7 @@ export default function EventDetail({ event, datum, userId, profilesById, commen
           {canEdit ? <button className="link strong" onClick={onEdit}>Bearbeiten</button> : <span />}
         </div>
 
-        <div className={'detail-card' + (maybe ? ' maybe' : '')} style={{ '--ev': color }}>
+        <div className={'detail-card' + (maybe ? ' maybe' : '') + (event.gemeinsam ? ' light' : '')} style={{ '--ev': color }}>
           <h2>{event.title}</h2>
           <p>{fmtDay(datum)} · {timeText(event)}</p>
           {maybe && <p className="badge">vielleicht</p>}
@@ -70,7 +71,7 @@ export default function EventDetail({ event, datum, userId, profilesById, commen
 
         <dl className="facts">
           {repeat && <><dt>Wiederholung</dt><dd>{repeat}</dd></>}
-          <dt>Kalender</dt><dd>{owner?.name}</dd>
+          <dt>Kalender</dt><dd>{event.gemeinsam ? Object.values(profilesById).map((p) => p.name).join(' & ') : owner?.name}</dd>
           <dt>Eingetragen von</dt><dd>{creator?.name}</dd>
           {event.location && <><dt>Ort</dt><dd>{event.location}</dd></>}
           {event.note && <><dt>Notiz</dt><dd className="pre">{event.note}</dd></>}

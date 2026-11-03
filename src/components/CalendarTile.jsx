@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useCalendarData } from '../lib/useCalendarData.js'
 import { expandEvent } from '../lib/recurrence.js'
+import { GEMEINSAM_FARBE } from '../lib/colors.js'
 
 // Kurzinfo auf der Kalender-Kachel: Anzahl heute + nächster Termin
 export default function CalendarTile() {
@@ -26,7 +27,7 @@ export default function CalendarTile() {
   }, [data])
 
   if (!loaded) return <p className="tile-sub">Lädt …</p>
-  const color = info.next && data.profiles.find((p) => p.id === info.next.ev.owner_id)?.farbe
+  const color = info.next && (info.next.ev.gemeinsam ? GEMEINSAM_FARBE : data.profiles.find((p) => p.id === info.next.ev.owner_id)?.farbe)
   return (
     <>
       <p className="tile-sub">{info.today === 0 ? 'Heute nichts' : info.today === 1 ? '1 Termin heute' : `${info.today} Termine heute`}</p>

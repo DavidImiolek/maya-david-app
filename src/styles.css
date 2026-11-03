@@ -148,3 +148,9 @@ h3 { margin: 10px 0 0; font-size: 16px; border-top: 1px solid var(--line); paddi
 .tile-next i { flex: none; width: 8px; height: 8px; border-radius: 2px; }
 .tile-soon { border-style: dashed; border-top-width: 1px; background: transparent; color: var(--muted); }
 .topbar .back { color: var(--text); font-weight: 600; text-decoration: none; }
+
+/* Gemeinsame Termine: Pastell-Hellblau mit dunkler Schrift */
+.fc-event.ev-light { color: #24476B; }
+.fc-event.ev-light.ev-maybe { color: #24476B; }
+.detail-card.light { color: #24476B; }
+.segmented button.on.light { color: #24476B; }
