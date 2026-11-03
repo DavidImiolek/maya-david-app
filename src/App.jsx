@@ -3,6 +3,7 @@ import { supabase, configMissing } from './lib/supabase.js'
 import { FEATURES } from './features.js'
 import Login from './components/Login.jsx'
 import Home from './components/Home.jsx'
+import { markSeen } from './lib/push.js'
 
 // Aktuelle Seite steht in der Adresse hinter dem #, z. B. ...#/kalender
 function useRoute() {
@@ -26,6 +27,15 @@ export default function App() {
     const { data } = supabase.auth.onAuthStateChange((_event, s) => setSession(s))
     return () => data.subscription.unsubscribe()
   }, [])
+
+  // Bei jedem Öffnen / Zurückkehren: rote Zahl am Icon zurücksetzen
+  useEffect(() => {
+    if (!session) return
+    const seen = () => document.visibilityState === 'visible' && markSeen(session.user.id)
+    seen()
+    document.addEventListener('visibilitychange', seen)
+    return () => document.removeEventListener('visibilitychange', seen)
+  }, [session])
 
   if (configMissing) {
     return (

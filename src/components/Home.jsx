@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 import { FEATURES } from '../features.js'
+import PushSetup from './PushSetup.jsx'
 
 // Begrüßungsname: einmal pro App-Start zufällig aus den Spitznamen,
 // möglichst nicht derselbe wie beim letzten Mal
@@ -44,6 +45,8 @@ export default function Home({ session }) {
         </div>
         <button className="link" onClick={() => supabase.auth.signOut()}>Abmelden</button>
       </header>
+
+      <PushSetup userId={session.user.id} />
 
       <div className="tiles">
         {FEATURES.map((f) => (
