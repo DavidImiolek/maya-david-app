@@ -178,3 +178,10 @@ h3 { margin: 10px 0 0; font-size: 16px; border-top: 1px solid var(--line); paddi
 .shop-list.done li { background: transparent; }
 .shop-list.done .shop-text { text-decoration: line-through; color: var(--muted); }
 .tiles .tile:nth-child(2) .tile-next { white-space: normal; }
+
+/* Wischen zwischen Wochen/Monaten: kurzes Hineingleiten */
+@keyframes in-from-right { from { transform: translateX(24px); opacity: .4; } to { transform: none; opacity: 1; } }
+@keyframes in-from-left  { from { transform: translateX(-24px); opacity: .4; } to { transform: none; opacity: 1; } }
+.calendar.slide-left .fc-view-harness  { animation: in-from-right .22s ease-out; }
+.calendar.slide-right .fc-view-harness { animation: in-from-left .22s ease-out; }
+.calendar { touch-action: pan-y; }

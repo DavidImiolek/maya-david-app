@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import dayGridPlugin from '@fullcalendar/daygrid'
@@ -7,7 +7,41 @@ import deLocale from '@fullcalendar/core/locales/de'
 import { expandEvent, dateKey } from '../lib/recurrence.js'
 import { eventColor } from '../lib/colors.js'
 
+// Wischen: mindestens so weit (px) und deutlich mehr waagrecht als senkrecht
+const SWIPE_MIN = 60
+
 export default function CalendarView({ data, profilesById, onEventClick, onDateClick }) {
+  const calRef = useRef(null)
+  const touch = useRef(null)
+  const wrapRef = useRef(null)
+
+  // Nach links wischen → nächste Woche/Monat, nach rechts → vorherige
+  // (FullCalendar weiß selbst, ob gerade Woche oder Monat angezeigt wird)
+  function onTouchStart(e) {
+    const t = e.touches[0]
+    touch.current = { x: t.clientX, y: t.clientY, time: Date.now() }
+  }
+  function onTouchEnd(e) {
+    const start = touch.current
+    touch.current = null
+    if (!start) return
+    const t = e.changedTouches[0]
+    const dx = t.clientX - start.x
+    const dy = t.clientY - start.y
+    if (Math.abs(dx) < SWIPE_MIN || Math.abs(dx) < Math.abs(dy) * 1.5 || Date.now() - start.time > 800) return
+    const api = calRef.current?.getApi()
+    if (!api) return
+    if (dx < 0) api.next()
+    else api.prev()
+    // kleine Gleit-Animation in Wischrichtung
+    const el = wrapRef.current
+    if (el) {
+      el.classList.remove('slide-left', 'slide-right')
+      void el.offsetWidth
+      el.classList.add(dx < 0 ? 'slide-left' : 'slide-right')
+    }
+  }
+
   // Ausnahmen je Termin: { eventId: Set("2026-11-10", ...) }
   const exceptionsByEvent = useMemo(() => {
     const map = {}
@@ -62,8 +96,9 @@ export default function CalendarView({ data, profilesById, onEventClick, onDateC
   )
 
   return (
-    <div className="calendar">
+    <div className="calendar" ref={wrapRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <FullCalendar
+        ref={calRef}
         plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
         locale={deLocale}
         initialView="timeGridWeek"
