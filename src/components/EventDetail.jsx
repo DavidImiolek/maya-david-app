@@ -74,6 +74,7 @@ export default function EventDetail({ event, datum, userId, profilesById, commen
           <dt>Kalender</dt><dd>{event.gemeinsam ? Object.values(profilesById).map((p) => p.name).join(' & ') : owner?.name}</dd>
           <dt>Eingetragen von</dt><dd>{creator?.name}</dd>
           {event.location && <><dt>Ort</dt><dd>{event.location}</dd></>}
+          {event.im_iphone_kalender && <><dt>iPhone-Kalender</dt><dd>📲 wird übernommen</dd></>}
           {event.note && <><dt>Notiz</dt><dd className="pre">{event.note}</dd></>}
         </dl>
 

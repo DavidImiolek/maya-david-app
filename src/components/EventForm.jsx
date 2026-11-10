@@ -31,6 +31,7 @@ function initialState(event, defaults, me) {
       freq: rule?.freq || 'NONE', byday: rule?.byday?.length ? rule.byday : [s.getDay()],
       until: rule?.until || '',
       location: event.location || '', note: event.note || '',
+      iphone: !!event.im_iphone_kalender,
     }
   }
   const day = defaults?.date || dateKey(new Date())
@@ -41,7 +42,7 @@ function initialState(event, defaults, me) {
     day, endDay: day, startTime,
     endTime: `${String(Math.min(h + 1, 23)).padStart(2, '0')}:${String(m).padStart(2, '0')}`,
     openEnd: false, freq: 'NONE', byday: [toDate(day).getDay()], until: '',
-    location: '', note: '',
+    location: '', note: '', iphone: false,
   }
 }
 
@@ -87,6 +88,7 @@ export default function EventForm({ me, profiles, event, defaults, onClose, onSa
       recurrence_rule: buildRule({ freq: f.freq, byday: f.byday, until: f.until || null }),
       location: f.location.trim() || null,
       note: f.note.trim() || null,
+      im_iphone_kalender: f.iphone,
     }
     setBusy(true)
     const { error } = event
@@ -204,6 +206,20 @@ export default function EventForm({ me, profiles, event, defaults, onClose, onSa
 
         <input placeholder="Ort" value={f.location} onChange={(e) => set({ location: e.target.value })} />
         <textarea placeholder="Notiz" rows={3} value={f.note} onChange={(e) => set({ note: e.target.value })} />
+
+        <div className="rows">
+          <label className="row">
+            <span>📲 In iPhone-Kalender übernehmen</span>
+            <input type="checkbox" checked={f.iphone} onChange={(e) => set({ iphone: e.target.checked })} />
+          </label>
+        </div>
+        {f.iphone && (
+          <p className="hint">
+            Erscheint im iPhone-Kalender „Maya &amp; David“ bei{' '}
+            {f.both ? 'euch beiden' : profiles.find((p) => p.id === f.owner_id)?.name || '…'}
+            {' '}– sobald dort der Kalender einmal abonniert ist (📲 oben im Kalender).
+          </p>
+        )}
 
         {error && <p className="error">{error}</p>}
       </form>

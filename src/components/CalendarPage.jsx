@@ -4,6 +4,7 @@ import CalendarView from './CalendarView.jsx'
 import EventForm from './EventForm.jsx'
 import EventDetail from './EventDetail.jsx'
 import { GEMEINSAM_FARBE } from '../lib/colors.js'
+import KalenderAbo from './KalenderAbo.jsx'
 
 export default function CalendarPage({ session }) {
   const userId = session.user.id
@@ -28,6 +29,7 @@ export default function CalendarPage({ session }) {
           <span><i style={{ background: GEMEINSAM_FARBE }} />Beide</span>
           <span className="legend-maybe"><i />vielleicht</span>
         </div>
+        <button className="link abo-btn" aria-label="iPhone-Kalender einrichten" onClick={() => setSheet({ type: 'abo' })}>📲</button>
       </header>
 
       {loadError && <p className="error banner">{loadError}</p>}
@@ -51,6 +53,8 @@ export default function CalendarPage({ session }) {
           onSaved={() => { setSheet(null); reload() }}
         />
       )}
+
+      {sheet?.type === 'abo' && <KalenderAbo userId={userId} onClose={() => setSheet(null)} />}
 
       {sheet?.type === 'detail' && detailEvent && (
         <EventDetail
