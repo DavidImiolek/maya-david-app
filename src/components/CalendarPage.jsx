@@ -5,17 +5,20 @@ import EventForm from './EventForm.jsx'
 import EventDetail from './EventDetail.jsx'
 import { GEMEINSAM_FARBE } from '../lib/colors.js'
 import KalenderAbo from './KalenderAbo.jsx'
+import Jubel, { JUBEL_TEXTE, useJubelBild } from './Jubel.jsx'
 
 export default function CalendarPage({ session }) {
   const userId = session.user.id
   const { data, loadError, reload } = useCalendarData()
-  const [sheet, setSheet] = useState(null) // { type: 'form', event?, defaults? } | { type: 'detail', eventId, datum }
+  const [sheet, setSheet] = useState(null)
+  const [jubel, setJubel] = useState(null) // { type: 'form', event?, defaults? } | { type: 'detail', eventId, datum }
 
   const profilesById = useMemo(
     () => Object.fromEntries(data.profiles.map((p) => [p.id, p])),
     [data.profiles]
   )
   const me = profilesById[userId]
+  const jubelBild = useJubelBild(me && JUBEL_TEXTE[me.name]?.bild)
   const detailEvent = sheet?.type === 'detail' ? data.events.find((e) => e.id === sheet.eventId) : null
 
   return (
@@ -50,9 +53,16 @@ export default function CalendarPage({ session }) {
           event={sheet.event}
           defaults={sheet.defaults}
           onClose={() => setSheet(null)}
-          onSaved={() => { setSheet(null); reload() }}
+          onSaved={(info) => {
+            setSheet(null)
+            reload()
+            // Neuer gemeinsamer Termin → Jubel-Animation (nur für Personen mit eigenem Text)
+            if (info?.neu && info?.gemeinsam && me && JUBEL_TEXTE[me.name]) setJubel(JUBEL_TEXTE[me.name])
+          }}
         />
       )}
+
+      {jubel && <Jubel titel={jubel.titel} text={jubel.text} bildUrl={jubelBild} onClose={() => setJubel(null)} />}
 
       {sheet?.type === 'abo' && <KalenderAbo userId={userId} onClose={() => setSheet(null)} />}
 

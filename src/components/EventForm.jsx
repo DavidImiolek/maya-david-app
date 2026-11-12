@@ -96,7 +96,7 @@ export default function EventForm({ me, profiles, event, defaults, onClose, onSa
       : await supabase.from('events').insert(row)
     setBusy(false)
     if (error) return setError('Speichern fehlgeschlagen: ' + error.message)
-    onSaved()
+    onSaved({ neu: !event, gemeinsam: f.both })
   }
 
   // Antippen schaltet eine Person an/aus. Beide an = gemeinsamer Termin.
