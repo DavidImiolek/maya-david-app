@@ -250,7 +250,7 @@ h3 { margin: 10px 0 0; font-size: 16px; border-top: 1px solid var(--line); paddi
 }
 .ms-cell {
   display: flex; flex-direction: column; align-items: stretch; gap: 1px;
-  padding: 2px 1px 2px; min-height: 80px; background: none; border: none; border-bottom: 1px solid var(--line);
+  padding: 2px 1px 2px; min-height: 115px; background: none; border: none; border-bottom: 1px solid var(--line);
   font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; overflow: hidden;
 }
 .ms-cell:active { background: var(--fc-today-bg-color); }
