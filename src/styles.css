@@ -231,3 +231,106 @@ h3 { margin: 10px 0 0; font-size: 16px; border-top: 1px solid var(--line); paddi
   border-radius: 20px; border: 4px solid #F4C0D1;
   animation: jubel-beat 1.2s ease-in-out .6s infinite;
 }
+
+/* ---------- Monatsscroll (Standardansicht) ---------- */
+.month-scroll { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.ms-weekbar {
+  display: grid; grid-template-columns: repeat(7, 1fr); text-align: center;
+  font-size: 12px; font-weight: 600; color: var(--muted); padding: 6px 8px 4px;
+  border-bottom: 1px solid var(--line); background: var(--bg); position: sticky; top: 0; z-index: 2;
+}
+.ms-weekend { color: color-mix(in srgb, var(--muted) 60%, transparent); }
+.ms-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 8px 80px; }
+.ms-month { margin-top: 20px; }
+.ms-month:first-child { margin-top: 8px; }
+.ms-label { font-size: 20px; font-weight: 700; color: var(--text); padding: 4px 4px 8px; }
+.ms-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; }
+.ms-cell {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 4px 0 6px; min-height: 50px; background: none; border: none; font: inherit; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ms-cell:active { background: var(--fc-today-bg-color); border-radius: 8px; }
+.ms-empty { cursor: default; }
+.ms-empty:active { background: none; }
+.ms-day { font-size: 15px; color: var(--text); line-height: 28px; width: 28px; height: 28px; text-align: center; border-radius: 50%; }
+.ms-wknd .ms-day { color: var(--muted); }
+.ms-today { background: #D85A30; color: #fff !important; font-weight: 600; }
+.ms-dots { display: flex; gap: 3px; justify-content: center; align-items: center; flex-wrap: wrap; max-width: 40px; }
+.ms-dots i { width: 6px; height: 6px; border-radius: 50%; display: block; }
+.ms-dot-maybe { opacity: .5; }
+.ms-extra { font-size: 9px; color: var(--muted); }
+
+/* ---------- Heute-Button ---------- */
+.heute-btn {
+  position: fixed; left: 18px; bottom: calc(22px + env(safe-area-inset-bottom)); z-index: 5;
+  padding: 8px 16px; border-radius: 20px; border: 1px solid var(--line);
+  background: var(--card); color: var(--text); font-size: 14px; font-weight: 600;
+  box-shadow: 0 2px 10px rgba(0,0,0,.1);
+}
+
+/* ---------- Tagesansicht ---------- */
+.day-view { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.dv-back { padding: 8px 12px; font-size: 16px; font-weight: 600; color: var(--text); }
+
+/* Wochenleiste */
+.dv-weekstrip {
+  display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 8px 6px;
+  border-bottom: 1px solid var(--line);
+}
+.dv-weekday {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: none; border: none; font: inherit; padding: 4px 0; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.dv-wlabel { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+.dv-wnum { font-size: 16px; width: 32px; height: 32px; line-height: 32px; text-align: center; border-radius: 50%; }
+.dv-sel .dv-wlabel { color: var(--text); font-weight: 600; }
+.dv-sel-num { background: var(--text); color: #fff; font-weight: 600; }
+.dv-today-num { background: #D85A30; color: #fff; font-weight: 600; }
+.dv-sel .dv-today-num { background: var(--text); }
+
+/* Überschrift */
+.dv-heading { font-size: 14px; font-weight: 600; padding: 8px 14px 4px; color: var(--text); }
+
+/* Ganztägig */
+.dv-allday {
+  display: flex; align-items: flex-start; gap: 8px; padding: 6px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.dv-allday-label { font-size: 12px; color: var(--muted); padding-top: 4px; min-width: 48px; }
+.dv-allday-items { display: flex; flex-wrap: wrap; gap: 4px; }
+.dv-allday-ev {
+  padding: 4px 10px; border-radius: 6px; border: none; font: inherit; font-size: 13px; font-weight: 600;
+  color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.dv-allday-ev.dv-maybe { border: 1.5px dashed var(--ev); }
+.dv-allday-ev.dv-light { color: #24476B; }
+
+/* Timeline */
+.dv-timeline { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; }
+.dv-hours { position: relative; margin-bottom: 60px; }
+.dv-hour { position: absolute; left: 0; right: 0; height: 0; }
+.dv-hour-label { position: absolute; left: 8px; top: -8px; font-size: 11px; color: var(--muted); width: 42px; text-align: right; }
+.dv-hour-line { position: absolute; left: 56px; right: 8px; border-top: 1px solid var(--line); }
+
+/* Termin-Blöcke in der Timeline */
+.dv-event {
+  position: absolute; border-radius: 6px; padding: 3px 6px; overflow: hidden;
+  border: none; font: inherit; text-align: left; cursor: pointer; color: #fff;
+  -webkit-tap-highlight-color: transparent; z-index: 1;
+}
+.dv-event:active { opacity: .85; }
+.dv-ev-time { display: block; font-size: 10px; opacity: .9; }
+.dv-ev-title { display: block; font-size: 12px; font-weight: 600; line-height: 1.2; }
+.dv-ev-maybe { background: color-mix(in srgb, var(--ev) 18%, white) !important; border: 1.5px dashed var(--ev); color: color-mix(in srgb, var(--ev) 75%, black); }
+.dv-ev-openend { background: linear-gradient(to bottom, var(--ev) 0%, var(--ev) 25%, color-mix(in srgb, var(--ev) 8%, white) 100%) !important; }
+.dv-ev-light { color: #24476B; }
+
+/* Now-Linie */
+.dv-now { position: absolute; left: 50px; right: 8px; z-index: 3; height: 0; }
+.dv-now i { position: absolute; left: 0; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: #D85A30; }
+.dv-now span { display: block; border-top: 2px solid #D85A30; }
+
+/* Klickbare Stundenbereiche (hinter Events) */
+.dv-click { position: absolute; left: 56px; right: 8px; z-index: 0; cursor: pointer; }

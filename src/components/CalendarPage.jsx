@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useCalendarData } from '../lib/useCalendarData.js'
-import CalendarView from './CalendarView.jsx'
+import { dateKey } from '../lib/recurrence.js'
+import MonthScroll from './MonthScroll.jsx'
+import DayView from './DayView.jsx'
 import EventForm from './EventForm.jsx'
 import EventDetail from './EventDetail.jsx'
 import { GEMEINSAM_FARBE } from '../lib/colors.js'
@@ -10,8 +12,10 @@ import Jubel, { JUBEL_TEXTE, useJubelBild } from './Jubel.jsx'
 export default function CalendarPage({ session }) {
   const userId = session.user.id
   const { data, loadError, reload } = useCalendarData()
-  const [sheet, setSheet] = useState(null)
-  const [jubel, setJubel] = useState(null) // { type: 'form', event?, defaults? } | { type: 'detail', eventId, datum }
+  const [sheet, setSheet] = useState(null) // { type: 'form', event?, defaults? } | { type: 'detail', eventId, datum } | { type: 'abo' }
+  const [jubel, setJubel] = useState(null)
+  const [view, setView] = useState('month') // 'month' | 'day'
+  const [selectedDay, setSelectedDay] = useState(dateKey(new Date()))
 
   const profilesById = useMemo(
     () => Object.fromEntries(data.profiles.map((p) => [p.id, p])),
@@ -20,6 +24,25 @@ export default function CalendarPage({ session }) {
   const me = profilesById[userId]
   const jubelBild = useJubelBild(me && JUBEL_TEXTE[me.name]?.bild)
   const detailEvent = sheet?.type === 'detail' ? data.events.find((e) => e.id === sheet.eventId) : null
+
+  function openDay(dk) {
+    setSelectedDay(dk)
+    setView('day')
+  }
+
+  function goBackToMonth() {
+    setView('month')
+  }
+
+  function scrollToToday() {
+    if (view === 'day') {
+      setSelectedDay(dateKey(new Date()))
+    } else {
+      // Im MonthScroll: Scroll zum heutigen Tag auslösen durch kurzen Re-Mount
+      setView('_reset')
+      requestAnimationFrame(() => setView('month'))
+    }
+  }
 
   return (
     <div className="app">
@@ -37,14 +60,40 @@ export default function CalendarPage({ session }) {
 
       {loadError && <p className="error banner">{loadError}</p>}
 
-      <CalendarView
-        data={data}
-        profilesById={profilesById}
-        onEventClick={(eventId, datum) => setSheet({ type: 'detail', eventId, datum })}
-        onDateClick={(defaults) => setSheet({ type: 'form', defaults })}
-      />
+      {view === 'month' && (
+        <MonthScroll
+          data={data}
+          profilesById={profilesById}
+          onDayClick={openDay}
+        />
+      )}
 
-      <button className="fab" aria-label="Neuer Termin" onClick={() => setSheet({ type: 'form', defaults: {} })}>+</button>
+      {view === 'day' && (
+        <DayView
+          datum={selectedDay}
+          data={data}
+          profilesById={profilesById}
+          onBack={goBackToMonth}
+          onDayChange={setSelectedDay}
+          onEventClick={(eventId, datum) => setSheet({ type: 'detail', eventId, datum })}
+          onTimeClick={(date, time) => setSheet({ type: 'form', defaults: { date, time, allDay: false } })}
+        />
+      )}
+
+      {/* Heute-Button */}
+      <button className="heute-btn" onClick={scrollToToday}>Heute</button>
+
+      {/* FAB */}
+      <button
+        className="fab"
+        aria-label="Neuer Termin"
+        onClick={() =>
+          setSheet({
+            type: 'form',
+            defaults: view === 'day' ? { date: selectedDay } : {},
+          })
+        }
+      >+</button>
 
       {sheet?.type === 'form' && (
         <EventForm
@@ -56,7 +105,6 @@ export default function CalendarPage({ session }) {
           onSaved={(info) => {
             setSheet(null)
             reload()
-            // Neuer gemeinsamer Termin → Jubel-Animation (nur für Personen mit eigenem Text)
             if (info?.neu && info?.gemeinsam && me && JUBEL_TEXTE[me.name]) setJubel(JUBEL_TEXTE[me.name])
           }}
         />
