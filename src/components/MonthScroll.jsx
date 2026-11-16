@@ -77,8 +77,7 @@ export default function MonthScroll({ data, profilesById, onDayClick }) {
             const isToday = dk === todayKey
             const isWeekend = ((sc + d - 1) % 7) >= 5
             const occs = occMap.get(dk) || []
-            // Maximal 3 Punkte + "+N"
-            const dots = occs.slice(0, 3)
+            const shown = occs.slice(0, 3)
             const extra = occs.length - 3
 
             cells.push(
@@ -89,14 +88,14 @@ export default function MonthScroll({ data, profilesById, onDayClick }) {
                 onClick={() => onDayClick(dk)}
               >
                 <span className={'ms-day' + (isToday ? ' ms-today' : '')}>{d}</span>
-                {dots.length > 0 && (
-                  <span className="ms-dots">
-                    {dots.map((o, i) => (
-                      <i key={i} style={{ background: o.color }} className={o.maybe ? 'ms-dot-maybe' : ''} />
-                    ))}
-                    {extra > 0 && <span className="ms-extra">+{extra}</span>}
-                  </span>
-                )}
+                <span className="ms-events">
+                  {shown.map((o, i) => (
+                    <span key={i} className={'ms-ev' + (o.maybe ? ' ms-ev-maybe' : '')} style={{ background: o.maybe ? 'transparent' : o.color, borderColor: o.color, color: o.gemeinsam ? '#24476B' : '#fff' }}>
+                      {o.event.title}
+                    </span>
+                  ))}
+                  {extra > 0 && <span className="ms-more">+{extra}</span>}
+                </span>
               </button>
             )
           }

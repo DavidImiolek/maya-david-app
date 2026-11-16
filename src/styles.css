@@ -243,23 +243,32 @@ h3 { margin: 10px 0 0; font-size: 16px; border-top: 1px solid var(--line); paddi
 .ms-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 8px 80px; }
 .ms-month { margin-top: 20px; }
 .ms-month:first-child { margin-top: 8px; }
-.ms-label { font-size: 20px; font-weight: 700; color: var(--text); padding: 4px 4px 8px; }
-.ms-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; }
-.ms-cell {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 4px 0 6px; min-height: 50px; background: none; border: none; font: inherit; cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+.ms-label { font-size: 22px; font-weight: 700; color: var(--text); padding: 8px 4px 6px; }
+.ms-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 0;
+  border-top: 1px solid var(--line);
 }
-.ms-cell:active { background: var(--fc-today-bg-color); border-radius: 8px; }
+.ms-cell {
+  display: flex; flex-direction: column; align-items: stretch; gap: 1px;
+  padding: 2px 1px 2px; min-height: 80px; background: none; border: none; border-bottom: 1px solid var(--line);
+  font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; overflow: hidden;
+}
+.ms-cell:active { background: var(--fc-today-bg-color); }
 .ms-empty { cursor: default; }
 .ms-empty:active { background: none; }
-.ms-day { font-size: 15px; color: var(--text); line-height: 28px; width: 28px; height: 28px; text-align: center; border-radius: 50%; }
+.ms-day {
+  font-size: 14px; color: var(--text); line-height: 24px; width: 24px; height: 24px;
+  text-align: center; border-radius: 50%; align-self: center; flex-shrink: 0;
+}
 .ms-wknd .ms-day { color: var(--muted); }
 .ms-today { background: #D85A30; color: #fff !important; font-weight: 600; }
-.ms-dots { display: flex; gap: 3px; justify-content: center; align-items: center; flex-wrap: wrap; max-width: 40px; }
-.ms-dots i { width: 6px; height: 6px; border-radius: 50%; display: block; }
-.ms-dot-maybe { opacity: .5; }
-.ms-extra { font-size: 9px; color: var(--muted); }
+.ms-events { display: flex; flex-direction: column; gap: 1px; overflow: hidden; flex: 1; }
+.ms-ev {
+  display: block; font-size: 10px; line-height: 14px; padding: 0 2px; border-radius: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0;
+}
+.ms-ev-maybe { border: 1px dashed; background: transparent !important; font-size: 9px; line-height: 12px; }
+.ms-more { font-size: 9px; color: var(--muted); text-align: center; }
 
 /* ---------- Heute-Button ---------- */
 .heute-btn {
